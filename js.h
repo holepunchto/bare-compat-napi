@@ -22,38 +22,54 @@ typedef struct napi_value__ js_value_t;
 typedef struct napi_ref__ js_ref_t;
 typedef struct napi_deferred__ js_deferred_t;
 typedef struct napi_callback_info__ js_callback_info_t;
+typedef struct napi_threadsafe_function__ js_threadsafe_function_t;
 
 typedef struct js_type_tag_s js_type_tag_t;
 typedef struct js_property_descriptor_s js_property_descriptor_t;
 
 typedef js_value_t *(*js_function_cb)(js_env_t *, js_callback_info_t *);
 typedef void (*js_finalize_cb)(js_env_t *, void *data, void *finalize_hint);
+typedef void (*js_threadsafe_function_cb)(js_env_t *, js_value_t *function, void *context, void *data);
 
 typedef enum {
-  js_undefined,
-  js_null,
-  js_boolean,
-  js_number,
-  js_string,
-  js_symbol,
-  js_object,
-  js_function,
-  js_external,
-  js_bigint,
+  js_undefined = 0,
+  js_null = 1,
+  js_boolean = 2,
+  js_number = 3,
+  js_string = 4,
+  js_symbol = 5,
+  js_object = 6,
+  js_function = 7,
+  js_external = 8,
+  js_bigint = 9,
 } js_value_type_t;
 
 typedef enum {
-  js_int8_array,
-  js_uint8_array,
-  js_uint8_clamped_array,
-  js_int16_array,
-  js_uint16_array,
-  js_int32_array,
-  js_uint32_array,
-  js_float32_array,
-  js_float64_array,
-  js_bigint64_array,
-  js_biguint64_array,
+  js_int8array = 0,
+  js_uint8array = 1,
+  js_uint8clampedarray = 2,
+  js_int16array = 3,
+  js_uint16array = 4,
+  js_int32array = 5,
+  js_uint32array = 6,
+  js_float32array = 7,
+  js_float64array = 8,
+  js_bigint64array = 9,
+  js_biguint64array = 10,
+
+  // Legacy aliases
+
+  /** @deprecated */ js_int8_array = js_int8array,
+  /** @deprecated */ js_uint8_array = js_uint8array,
+  /** @deprecated */ js_uint8_clamped_array = js_uint8clampedarray,
+  /** @deprecated */ js_int16_array = js_int16array,
+  /** @deprecated */ js_uint16_array = js_uint16array,
+  /** @deprecated */ js_int32_array = js_int32array,
+  /** @deprecated */ js_uint32_array = js_uint32array,
+  /** @deprecated */ js_float32_array = js_float32array,
+  /** @deprecated */ js_float64_array = js_float64array,
+  /** @deprecated */ js_bigint64_array = js_bigint64array,
+  /** @deprecated */ js_biguint64_array = js_biguint64array,
 } js_typedarray_type_t;
 
 enum {
@@ -62,6 +78,16 @@ enum {
   js_configurable = 1 << 2,
   js_static = 1 << 10,
 };
+
+typedef enum {
+  js_threadsafe_function_release = 0,
+  js_threadsafe_function_abort = 1
+} js_threadsafe_function_release_mode_t;
+
+typedef enum {
+  js_threadsafe_function_nonblocking = 0,
+  js_threadsafe_function_blocking = 1
+} js_threadsafe_function_call_mode_t;
 
 struct js_property_descriptor_s {
   const char *name;
@@ -92,6 +118,7 @@ js_convert_from_valuetype (napi_valuetype type) {
   case napi_undefined:
     return js_undefined;
   case napi_null:
+  default:
     return js_null;
   case napi_boolean:
     return js_boolean;
@@ -118,6 +145,7 @@ js_convert_to_valuetype (js_value_type_t type) {
   case js_undefined:
     return napi_undefined;
   case js_null:
+  default:
     return napi_null;
   case js_boolean:
     return napi_boolean;
@@ -142,55 +170,101 @@ static inline js_typedarray_type_t
 js_convert_from_typedarray_type (napi_typedarray_type type) {
   switch (type) {
   case napi_int8_array:
-    return js_int8_array;
+    return js_int8array;
   case napi_uint8_array:
-    return js_uint8_array;
+  default:
+    return js_uint8array;
   case napi_uint8_clamped_array:
-    return js_uint8_clamped_array;
+    return js_uint8clampedarray;
   case napi_int16_array:
-    return js_int16_array;
+    return js_int16array;
   case napi_uint16_array:
-    return js_uint16_array;
+    return js_uint16array;
   case napi_int32_array:
-    return js_int32_array;
+    return js_int32array;
   case napi_uint32_array:
-    return js_uint32_array;
+    return js_uint32array;
   case napi_float32_array:
-    return js_float32_array;
+    return js_float32array;
   case napi_float64_array:
-    return js_float64_array;
+    return js_float64array;
   case napi_bigint64_array:
-    return js_bigint64_array;
+    return js_bigint64array;
   case napi_biguint64_array:
-    return js_biguint64_array;
+    return js_biguint64array;
   }
 }
 
 static inline napi_typedarray_type
 js_convert_to_typedarray_type (js_typedarray_type_t type) {
   switch (type) {
-  case js_int8_array:
+  case js_int8array:
     return napi_int8_array;
-  case js_uint8_array:
+  case js_uint8array:
+  default:
     return napi_uint8_array;
-  case js_uint8_clamped_array:
+  case js_uint8clampedarray:
     return napi_uint8_clamped_array;
-  case js_int16_array:
+  case js_int16array:
     return napi_int16_array;
-  case js_uint16_array:
+  case js_uint16array:
     return napi_uint16_array;
-  case js_int32_array:
+  case js_int32array:
     return napi_int32_array;
-  case js_uint32_array:
+  case js_uint32array:
     return napi_uint32_array;
-  case js_float32_array:
+  case js_float32array:
     return napi_float32_array;
-  case js_float64_array:
+  case js_float64array:
     return napi_float64_array;
-  case js_bigint64_array:
+  case js_bigint64array:
     return napi_bigint64_array;
-  case js_biguint64_array:
+  case js_biguint64array:
     return napi_biguint64_array;
+  }
+}
+
+static inline js_threadsafe_function_release_mode_t
+js_convert_from_threadsafe_function_release_mode (napi_threadsafe_function_release_mode mode) {
+  switch (mode) {
+  case napi_tsfn_release:
+  default:
+    return js_threadsafe_function_release;
+  case napi_tsfn_abort:
+    return js_threadsafe_function_abort;
+  }
+}
+
+static inline napi_threadsafe_function_release_mode
+js_convert_to_threadsafe_function_release_mode (js_threadsafe_function_release_mode_t mode) {
+  switch (mode) {
+  case js_threadsafe_function_release:
+  default:
+    return napi_tsfn_release;
+  case js_threadsafe_function_abort:
+    return napi_tsfn_abort;
+  }
+}
+
+static inline js_threadsafe_function_call_mode_t
+js_convert_from_threadsafe_function_call_mode (napi_threadsafe_function_call_mode mode) {
+  switch (mode) {
+  case napi_tsfn_nonblocking:
+  default:
+    return js_threadsafe_function_nonblocking;
+  case napi_tsfn_blocking:
+    return js_threadsafe_function_blocking;
+  }
+}
+
+static inline napi_threadsafe_function_call_mode
+js_convert_to_threadsafe_function_call_mode (js_threadsafe_function_call_mode_t mode) {
+  switch (mode) {
+  case js_threadsafe_function_nonblocking:
+  default:
+    return napi_tsfn_nonblocking;
+  case js_threadsafe_function_blocking:
+    return napi_tsfn_blocking;
   }
 }
 
@@ -983,6 +1057,48 @@ js_call_function_with_checkpoint (js_env_t *env, js_value_t *receiver, js_value_
 static inline int
 js_new_instance (js_env_t *env, js_value_t *constructor, size_t argc, js_value_t *const argv[], js_value_t **result) {
   napi_status status = napi_new_instance(env, constructor, argc, argv, result);
+  return status == napi_ok ? 0 : -1;
+}
+
+static inline int
+js_create_threadsafe_function (js_env_t *env, js_value_t *function, size_t queue_limit, size_t initial_thread_count, js_finalize_cb finalize_cb, void *finalize_hint, void *context, js_threadsafe_function_cb cb, js_threadsafe_function_t **result) {
+  napi_status status = napi_create_threadsafe_function(env, function, NULL, NULL, queue_limit, initial_thread_count, finalize_hint, finalize_cb, context, cb, result);
+  return status == napi_ok ? 0 : -1;
+}
+
+static inline int
+js_get_threadsafe_function_context (js_threadsafe_function_t *function, void **result) {
+  napi_status status = napi_get_threadsafe_function_context(function, result);
+  return status == napi_ok ? 0 : -1;
+}
+
+static inline int
+js_call_threadsafe_function (js_threadsafe_function_t *function, void *data, js_threadsafe_function_call_mode_t mode) {
+  napi_status status = napi_call_threadsafe_function(function, data, js_convert_to_threadsafe_function_call_mode(mode));
+  return status == napi_ok ? 0 : -1;
+}
+
+static inline int
+js_acquire_threadsafe_function (js_threadsafe_function_t *function) {
+  napi_status status = napi_acquire_threadsafe_function(function);
+  return status == napi_ok ? 0 : -1;
+}
+
+static inline int
+js_release_threadsafe_function (js_threadsafe_function_t *function, js_threadsafe_function_release_mode_t mode) {
+  napi_status status = napi_release_threadsafe_function(function, js_convert_to_threadsafe_function_release_mode(mode));
+  return status == napi_ok ? 0 : -1;
+}
+
+static inline int
+js_ref_threadsafe_function (js_env_t *env, js_threadsafe_function_t *function) {
+  napi_status status = napi_ref_threadsafe_function(env, function);
+  return status == napi_ok ? 0 : -1;
+}
+
+static inline int
+js_unref_threadsafe_function (js_env_t *env, js_threadsafe_function_t *function) {
+  napi_status status = napi_unref_threadsafe_function(env, function);
   return status == napi_ok ? 0 : -1;
 }
 
