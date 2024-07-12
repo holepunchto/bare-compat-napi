@@ -1062,7 +1062,14 @@ js_new_instance (js_env_t *env, js_value_t *constructor, size_t argc, js_value_t
 
 static inline int
 js_create_threadsafe_function (js_env_t *env, js_value_t *function, size_t queue_limit, size_t initial_thread_count, js_finalize_cb finalize_cb, void *finalize_hint, void *context, js_threadsafe_function_cb cb, js_threadsafe_function_t **result) {
-  napi_status status = napi_create_threadsafe_function(env, function, NULL, NULL, queue_limit, initial_thread_count, finalize_hint, finalize_cb, context, cb, result);
+  napi_status status;
+
+  napi_value resource_name;
+  status = napi_create_string_utf8(env, "js_threadsafe_function_t", NAPI_AUTO_LENGTH, &resource_name);
+  assert(status == napi_ok);
+
+  status = napi_create_threadsafe_function(env, function, NULL, resource_name, queue_limit, initial_thread_count, finalize_hint, finalize_cb, context, cb, result);
+
   return status == napi_ok ? 0 : -1;
 }
 
