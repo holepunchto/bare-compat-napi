@@ -377,8 +377,8 @@ js_define_properties (js_env_t *env, js_value_t *object, js_property_descriptor_
 
     napi_property_descriptor *napi_property = &napi_properties[i];
 
-    napi_property->utf8name = property->name;
-    napi_property->name = NULL;
+    napi_property->name = property->name;
+    napi_property->utf8name = NULL;
 
     napi_property->method = property->method;
     napi_property->getter = property->getter;
