@@ -90,7 +90,7 @@ typedef enum {
 } js_threadsafe_function_call_mode_t;
 
 struct js_property_descriptor_s {
-  const char *name;
+  js_value_t *name;
   void *data;
   int attributes;
 
@@ -349,8 +349,8 @@ js_define_class (js_env_t *env, const char *name, size_t len, js_function_cb con
 
     napi_property_descriptor *napi_property = &napi_properties[i];
 
-    napi_property->utf8name = property->name;
-    napi_property->name = NULL;
+    napi_property->name = property->name;
+    napi_property->utf8name = NULL;
 
     napi_property->method = property->method;
     napi_property->getter = property->getter;
@@ -416,13 +416,13 @@ js_remove_wrap (js_env_t *env, js_value_t *object, void **result) {
 
 static inline int
 js_add_type_tag (js_env_t *env, js_value_t *object, const js_type_tag_t *tag) {
-  napi_status status = napi_type_tag_object(env, object, &(napi_type_tag){tag->lower, tag->upper});
+  napi_status status = napi_type_tag_object(env, object, &(napi_type_tag) {tag->lower, tag->upper});
   return status == napi_ok ? 0 : -1;
 }
 
 static inline int
 js_check_type_tag (js_env_t *env, js_value_t *object, const js_type_tag_t *tag, bool *result) {
-  napi_status status = napi_check_object_type_tag(env, object, &(napi_type_tag){tag->lower, tag->upper}, result);
+  napi_status status = napi_check_object_type_tag(env, object, &(napi_type_tag) {tag->lower, tag->upper}, result);
   return status == napi_ok ? 0 : -1;
 }
 
