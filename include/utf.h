@@ -9,6 +9,7 @@ extern "C" {
 
 typedef char utf8_t;
 typedef uint16_t utf16_t;
+typedef char latin1_t;
 
 #ifdef __cplusplus
 }
