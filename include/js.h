@@ -16,7 +16,9 @@ extern "C" {
 
 #include <node_version.h> // Node-API version information
 
+#ifndef NAPI_VERSION
 #define NAPI_VERSION NODE_API_SUPPORTED_VERSION_MAX
+#endif
 
 #include <node_api.h>
 
