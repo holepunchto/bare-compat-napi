@@ -1228,6 +1228,11 @@ js_get_callback_info(js_env_t *env, const js_callback_info_t *info, size_t *argc
 }
 
 static inline int
+js_get_typed_callback_info(const js_typed_callback_info_t *info, js_env_t **env, void **data) {
+  return 0;
+}
+
+static inline int
 js_get_new_target(js_env_t *env, const js_callback_info_t *info, js_value_t **result) {
   napi_status status = napi_get_new_target(env, (js_callback_info_t *) info, result);
   return js_convert_from_status(status);
