@@ -1334,6 +1334,8 @@ js_call_function_with_checkpoint(js_env_t *env, js_value_t *receiver, js_value_t
     assert(status == napi_ok);
 
     (void) (status);
+
+    return js_uncaught_exception;
   }
 
   return js_convert_from_status(status);
