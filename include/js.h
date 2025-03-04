@@ -1222,6 +1222,31 @@ js_delete_element(js_env_t *env, js_value_t *object, uint32_t index, bool *resul
 }
 
 static inline int
+js_set_array_elements(js_env_t *env, js_value_t *array, const js_value_t *elements[], size_t len, size_t offset) {
+  napi_status status = 0;
+  for (size_t i = 0; i < len; i++) {
+    status = napi_set_element(env, array, offset + i, (js_value_t *) elements[i]);
+    if (status != 0) break;
+  }
+  return js_convert_from_status(status);
+}
+
+static inline int
+js_get_array_elements(js_env_t *env, js_value_t *array, js_value_t **elements, size_t len, size_t offset, uint32_t *result) {
+  napi_status status = 0;
+  *result = 0;
+
+  for (; offset < len; offset++) {
+    status = napi_get_element(env, array, offset, &elements[offset]);
+
+    if (status == napi_ok) ++*result;
+    else break;
+  }
+
+  return js_convert_from_status(status);
+}
+
+static inline int
 js_get_callback_info(js_env_t *env, const js_callback_info_t *info, size_t *argc, js_value_t *argv[], js_value_t **receiver, void **data) {
   napi_status status = napi_get_cb_info(env, (js_callback_info_t *) info, argc, argv, receiver, data);
   return js_convert_from_status(status);
