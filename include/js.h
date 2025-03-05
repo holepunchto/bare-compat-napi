@@ -1233,15 +1233,22 @@ js_set_array_elements(js_env_t *env, js_value_t *array, const js_value_t *elemen
 
 static inline int
 js_get_array_elements(js_env_t *env, js_value_t *array, js_value_t **elements, size_t len, size_t offset, uint32_t *result) {
-  napi_status status = 0;
-  *result = 0;
+  uint32_t array_len;
+  napi_status status = napi_get_array_length(env, array, &array_len);
 
-  for (; offset < len; offset++) {
-    status = napi_get_element(env, array, offset, &elements[offset]);
+  assert(status == napi_ok && "napi_get_array_length() failed");
+  if (status != napi_ok) return js_convert_from_status(status);
 
-    if (status == napi_ok) ++*result;
+  int written = 0;
+
+  for (size_t i = 0, j = offset; i < len && j < array_len; i++, j++) {
+    status = napi_get_element(env, array, j, &elements[i]);
+
+    if (status == napi_ok) written++;
     else break;
   }
+
+  if (result != NULL) *result = written;
 
   return js_convert_from_status(status);
 }
