@@ -1161,7 +1161,7 @@ js_set_array_elements(js_env_t *env, js_value_t *array, const js_value_t *elemen
   for (size_t i = 0; i < len; i++) {
     status = napi_set_element(env, array, offset + i, (js_value_t *) elements[i]);
 
-    if (status != 0) break;
+    if (status != napi_ok) break;
   }
 
   return js_convert_from_status(status);
