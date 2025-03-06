@@ -1132,6 +1132,42 @@ js_get_array_length(js_env_t *env, js_value_t *value, uint32_t *result) {
 }
 
 static inline int
+js_get_array_elements(js_env_t *env, js_value_t *array, js_value_t **elements, size_t len, size_t offset, uint32_t *result) {
+  uint32_t array_len;
+
+  napi_status status = napi_get_array_length(env, array, &array_len);
+
+  if (status == napi_ok) {
+    uint32_t written = 0;
+
+    for (size_t i = 0, j = offset; i < len && j < array_len; i++, j++) {
+      status = napi_get_element(env, array, j, &elements[i]);
+
+      if (status != napi_ok) return js_convert_from_status(status);
+
+      written++;
+    }
+
+    if (result) *result = written;
+  }
+
+  return js_convert_from_status(status);
+}
+
+static inline int
+js_set_array_elements(js_env_t *env, js_value_t *array, const js_value_t *elements[], size_t len, size_t offset) {
+  napi_status status = 0;
+
+  for (size_t i = 0; i < len; i++) {
+    status = napi_set_element(env, array, offset + i, (js_value_t *) elements[i]);
+
+    if (status != 0) break;
+  }
+
+  return js_convert_from_status(status);
+}
+
+static inline int
 js_get_prototype(js_env_t *env, js_value_t *object, js_value_t **result) {
   napi_status status = napi_get_prototype(env, object, result);
   return js_convert_from_status(status);
@@ -1218,38 +1254,6 @@ js_set_element(js_env_t *env, js_value_t *object, uint32_t index, js_value_t *va
 static inline int
 js_delete_element(js_env_t *env, js_value_t *object, uint32_t index, bool *result) {
   napi_status status = napi_delete_element(env, object, index, result);
-  return js_convert_from_status(status);
-}
-
-static inline int
-js_set_array_elements(js_env_t *env, js_value_t *array, const js_value_t *elements[], size_t len, size_t offset) {
-  napi_status status = 0;
-  for (size_t i = 0; i < len; i++) {
-    status = napi_set_element(env, array, offset + i, (js_value_t *) elements[i]);
-    if (status != 0) break;
-  }
-  return js_convert_from_status(status);
-}
-
-static inline int
-js_get_array_elements(js_env_t *env, js_value_t *array, js_value_t **elements, size_t len, size_t offset, uint32_t *result) {
-  uint32_t array_len;
-  napi_status status = napi_get_array_length(env, array, &array_len);
-
-  assert(status == napi_ok && "napi_get_array_length() failed");
-  if (status != napi_ok) return js_convert_from_status(status);
-
-  int written = 0;
-
-  for (size_t i = 0, j = offset; i < len && j < array_len; i++, j++) {
-    status = napi_get_element(env, array, j, &elements[i]);
-
-    if (status == napi_ok) written++;
-    else break;
-  }
-
-  if (result != NULL) *result = written;
-
   return js_convert_from_status(status);
 }
 
