@@ -1137,19 +1137,19 @@ js_get_array_elements(js_env_t *env, js_value_t *array, js_value_t **elements, s
 
   napi_status status = napi_get_array_length(env, array, &array_len);
 
-  if (status == napi_ok) {
-    uint32_t written = 0;
+  if (status != napi_ok) return js_convert_from_status(status);
 
-    for (size_t i = 0, j = offset; i < len && j < array_len; i++, j++) {
-      status = napi_get_element(env, array, j, &elements[i]);
+  uint32_t written = 0;
 
-      if (status != napi_ok) return js_convert_from_status(status);
+  for (size_t i = 0, j = offset; i < len && j < array_len; i++, j++) {
+    status = napi_get_element(env, array, j, &elements[i]);
 
-      written++;
-    }
+    if (status != napi_ok) return js_convert_from_status(status);
 
-    if (result) *result = written;
+    written++;
   }
+
+  if (result) *result = written;
 
   return js_convert_from_status(status);
 }
