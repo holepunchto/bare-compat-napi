@@ -612,7 +612,7 @@ js_create_external_string_utf16le(js_env_t *env, utf16_t *str, size_t len, js_fi
 #else
   if (copied) *copied = true;
 
-  napi_status status = napi_create_string_utf16le(env, str, len, result);
+  napi_status status = napi_create_string_utf16(env, str, len, result);
 
   if (status == napi_ok && finalize_cb) finalize_cb(env, str, finalize_hint);
 #endif
