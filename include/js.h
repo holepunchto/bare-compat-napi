@@ -436,7 +436,7 @@ js_get_reference_value(js_env_t *env, js_ref_t *reference, js_value_t **result) 
 
 static inline int
 js_define_class(js_env_t *env, const char *name, size_t len, js_function_cb constructor, void *data, js_property_descriptor_t const properties[], size_t properties_len, js_value_t **result) {
-  napi_property_descriptor *napi_properties = malloc(sizeof(napi_property_descriptor) * properties_len);
+  napi_property_descriptor *napi_properties = (napi_property_descriptor *) malloc(sizeof(napi_property_descriptor) * properties_len);
 
   for (size_t i = 0; i < properties_len; i++) {
     const js_property_descriptor_t *property = &properties[i];
@@ -451,7 +451,7 @@ js_define_class(js_env_t *env, const char *name, size_t len, js_function_cb cons
     napi_property->setter = property->setter;
     napi_property->value = property->value;
 
-    napi_property->attributes = property->attributes;
+    napi_property->attributes = (napi_property_attributes) property->attributes;
     napi_property->data = property->data;
   }
 
@@ -464,7 +464,7 @@ js_define_class(js_env_t *env, const char *name, size_t len, js_function_cb cons
 
 static inline int
 js_define_properties(js_env_t *env, js_value_t *object, js_property_descriptor_t const properties[], size_t properties_len) {
-  napi_property_descriptor *napi_properties = malloc(sizeof(napi_property_descriptor) * properties_len);
+  napi_property_descriptor *napi_properties = (napi_property_descriptor *) malloc(sizeof(napi_property_descriptor) * properties_len);
 
   for (size_t i = 0; i < properties_len; i++) {
     const js_property_descriptor_t *property = &properties[i];
@@ -479,7 +479,7 @@ js_define_properties(js_env_t *env, js_value_t *object, js_property_descriptor_t
     napi_property->setter = property->setter;
     napi_property->value = property->value;
 
-    napi_property->attributes = property->attributes;
+    napi_property->attributes = (napi_property_attributes) property->attributes;
     napi_property->data = property->data;
   }
 
@@ -512,13 +512,15 @@ js_remove_wrap(js_env_t *env, js_value_t *object, void **result) {
 
 static inline int
 js_add_type_tag(js_env_t *env, js_value_t *object, const js_type_tag_t *tag) {
-  napi_status status = napi_type_tag_object(env, object, &(napi_type_tag) {tag->lower, tag->upper});
+  napi_type_tag napi_tag = {tag->lower, tag->upper};
+  napi_status status = napi_type_tag_object(env, object, &napi_tag);
   return js_convert_from_status(status);
 }
 
 static inline int
 js_check_type_tag(js_env_t *env, js_value_t *object, const js_type_tag_t *tag, bool *result) {
-  napi_status status = napi_check_object_type_tag(env, object, &(napi_type_tag) {tag->lower, tag->upper}, result);
+  napi_type_tag napi_tag = {tag->lower, tag->upper};
+  napi_status status = napi_check_object_type_tag(env, object, &napi_tag, result);
   return js_convert_from_status(status);
 }
 
@@ -596,7 +598,7 @@ static inline int
 js_create_external_string_utf8(js_env_t *env, utf8_t *str, size_t len, js_finalize_cb finalize_cb, void *finalize_hint, js_value_t **result, bool *copied) {
   if (copied) *copied = true;
 
-  napi_status status = js_create_string_utf8(env, str, len, result);
+  napi_status status = napi_create_string_utf8(env, str, len, result);
 
   if (status == napi_ok && finalize_cb) finalize_cb(env, str, finalize_hint);
 
@@ -1144,7 +1146,7 @@ js_get_array_elements(js_env_t *env, js_value_t *array, js_value_t **elements, s
 
 static inline int
 js_set_array_elements(js_env_t *env, js_value_t *array, const js_value_t *elements[], size_t len, size_t offset) {
-  napi_status status = 0;
+  napi_status status = napi_ok;
 
   for (size_t i = 0; i < len; i++) {
     status = napi_set_element(env, array, offset + i, (js_value_t *) elements[i]);
@@ -1292,7 +1294,7 @@ js_get_string_view(js_env_t *env, js_value_t *string, js_string_encoding_t *enco
   napi_status status = napi_get_value_string_utf8(env, string, NULL, 0, &view_len);
 
   if (status == napi_ok) {
-    void *view = malloc(view_len + 1 /* NULL */);
+    char *view = (char *) malloc(view_len + 1 /* NULL */);
 
     status = napi_get_value_string_utf8(env, string, view, view_len + 1 /* NULL */, NULL);
 
@@ -1302,7 +1304,7 @@ js_get_string_view(js_env_t *env, js_value_t *string, js_string_encoding_t *enco
 
     if (len) *len = view_len;
 
-    *result = view;
+    *result = (js_string_view_t *) view;
   }
 
   return js_convert_from_status(status);
@@ -1476,7 +1478,7 @@ js_vformat(char **result, size_t *size, const char *message, va_list args) {
   if (res < 0) return res;
 
   *size = res + 1 /* NULL */;
-  *result = malloc(*size);
+  *result = (char *) malloc(*size);
 
   va_copy(args_copy, args);
 

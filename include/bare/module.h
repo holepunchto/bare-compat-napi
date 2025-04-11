@@ -1,4 +1,3 @@
-
 #ifndef BARE_MODULE_H
 #define BARE_MODULE_H
 

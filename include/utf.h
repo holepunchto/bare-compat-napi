@@ -5,10 +5,12 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
+#ifndef __cplusplus
+typedef uint16_t char16_t;
+#endif
 
 typedef char utf8_t;
-typedef uint16_t utf16_t;
+typedef char16_t utf16_t;
 typedef char latin1_t;
 
 #ifdef __cplusplus
