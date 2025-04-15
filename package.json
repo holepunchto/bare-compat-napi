@@ -1,6 +1,6 @@
 {
   "name": "bare-compat-napi",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Bare compatibility headers for Node-API",
   "exports": {
     "./package": "./package.json"
