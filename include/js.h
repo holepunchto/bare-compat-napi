@@ -1006,6 +1006,204 @@ js_is_typedarray(js_env_t *env, js_value_t *value, bool *result) {
 }
 
 static inline int
+js_is_int8array(js_env_t *env, js_value_t *value, bool *result) {
+  napi_status status = napi_is_typedarray(env, value, result);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  if (*result == false) return napi_ok;
+
+  napi_typedarray_type type;
+  status = napi_get_typedarray_info(env, value, &type, NULL, NULL, NULL, NULL);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  *result = type == napi_int8_array;
+
+  return napi_ok;
+}
+
+static inline int
+js_is_uint8array(js_env_t *env, js_value_t *value, bool *result) {
+  napi_status status = napi_is_typedarray(env, value, result);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  if (*result == false) return napi_ok;
+
+  napi_typedarray_type type;
+  status = napi_get_typedarray_info(env, value, &type, NULL, NULL, NULL, NULL);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  *result = type == napi_uint8_array;
+
+  return napi_ok;
+}
+
+static inline int
+js_is_uint8clampedarray(js_env_t *env, js_value_t *value, bool *result) {
+  napi_status status = napi_is_typedarray(env, value, result);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  if (*result == false) return napi_ok;
+
+  napi_typedarray_type type;
+  status = napi_get_typedarray_info(env, value, &type, NULL, NULL, NULL, NULL);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  *result = type == napi_uint8_clamped_array;
+
+  return napi_ok;
+}
+
+static inline int
+js_is_int16array(js_env_t *env, js_value_t *value, bool *result) {
+  napi_status status = napi_is_typedarray(env, value, result);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  if (*result == false) return napi_ok;
+
+  napi_typedarray_type type;
+  status = napi_get_typedarray_info(env, value, &type, NULL, NULL, NULL, NULL);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  *result = type == napi_int16_array;
+
+  return napi_ok;
+}
+
+static inline int
+js_is_uint16array(js_env_t *env, js_value_t *value, bool *result) {
+  napi_status status = napi_is_typedarray(env, value, result);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  if (*result == false) return napi_ok;
+
+  napi_typedarray_type type;
+  status = napi_get_typedarray_info(env, value, &type, NULL, NULL, NULL, NULL);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  *result = type == napi_uint16_array;
+
+  return napi_ok;
+}
+
+static inline int
+js_is_int32array(js_env_t *env, js_value_t *value, bool *result) {
+  napi_status status = napi_is_typedarray(env, value, result);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  if (*result == false) return napi_ok;
+
+  napi_typedarray_type type;
+  status = napi_get_typedarray_info(env, value, &type, NULL, NULL, NULL, NULL);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  *result = type == napi_int32_array;
+
+  return napi_ok;
+}
+
+static inline int
+js_is_uint32array(js_env_t *env, js_value_t *value, bool *result) {
+  napi_status status = napi_is_typedarray(env, value, result);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  if (*result == false) return napi_ok;
+
+  napi_typedarray_type type;
+  status = napi_get_typedarray_info(env, value, &type, NULL, NULL, NULL, NULL);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  *result = type == napi_uint32_array;
+
+  return napi_ok;
+}
+
+static inline int
+js_is_float32array(js_env_t *env, js_value_t *value, bool *result) {
+  napi_status status = napi_is_typedarray(env, value, result);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  if (*result == false) return napi_ok;
+
+  napi_typedarray_type type;
+  status = napi_get_typedarray_info(env, value, &type, NULL, NULL, NULL, NULL);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  *result = type == napi_float32_array;
+
+  return napi_ok;
+}
+
+static inline int
+js_is_float64array(js_env_t *env, js_value_t *value, bool *result) {
+  napi_status status = napi_is_typedarray(env, value, result);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  if (*result == false) return napi_ok;
+
+  napi_typedarray_type type;
+  status = napi_get_typedarray_info(env, value, &type, NULL, NULL, NULL, NULL);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  *result = type == napi_float64_array;
+
+  return napi_ok;
+}
+
+static inline int
+js_is_bigint64array(js_env_t *env, js_value_t *value, bool *result) {
+  napi_status status = napi_is_typedarray(env, value, result);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  if (*result == false) return napi_ok;
+
+  napi_typedarray_type type;
+  status = napi_get_typedarray_info(env, value, &type, NULL, NULL, NULL, NULL);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  *result = type == napi_bigint64_array;
+
+  return napi_ok;
+}
+
+static inline int
+js_is_biguint64array(js_env_t *env, js_value_t *value, bool *result) {
+  napi_status status = napi_is_typedarray(env, value, result);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  if (*result == false) return napi_ok;
+
+  napi_typedarray_type type;
+  status = napi_get_typedarray_info(env, value, &type, NULL, NULL, NULL, NULL);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  *result = type == napi_biguint64_array;
+
+  return napi_ok;
+}
+
+static inline int
 js_is_dataview(js_env_t *env, js_value_t *value, bool *result) {
   napi_status status = napi_is_dataview(env, value, result);
   return js_convert_from_status(status);
