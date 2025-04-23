@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include <assert.h>
+#include <math.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -887,6 +888,52 @@ js_is_number(js_env_t *env, js_value_t *value, bool *result) {
   if (status == napi_ok) *result = napi_type == napi_number;
 
   return js_convert_from_status(status);
+}
+
+static inline int
+js_is_int32(js_env_t *env, js_value_t *value, bool *result) {
+  napi_valuetype napi_type;
+
+  napi_status status = napi_typeof(env, value, &napi_type);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  *result = napi_type == napi_number;
+
+  if (*result == false) return napi_ok;
+
+  double integral, number;
+
+  status = napi_get_value_double(env, value, &number);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  *result = modf(number, &integral) == 0.0 && integral >= INT32_MIN && integral <= INT32_MAX;
+
+  return napi_ok;
+}
+
+static inline int
+js_is_uint32(js_env_t *env, js_value_t *value, bool *result) {
+  napi_valuetype napi_type;
+
+  napi_status status = napi_typeof(env, value, &napi_type);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  *result = napi_type == napi_number;
+
+  if (*result == false) return napi_ok;
+
+  double integral, number;
+
+  status = napi_get_value_double(env, value, &number);
+
+  if (status != napi_ok) return js_convert_from_status(status);
+
+  *result = modf(number, &integral) == 0.0 && integral >= 0.0 && integral <= UINT32_MAX;
+
+  return napi_ok;
 }
 
 static inline int
