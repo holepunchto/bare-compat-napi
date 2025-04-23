@@ -36,8 +36,6 @@ typedef struct napi_async_cleanup_hook_handle__ js_deferred_teardown_t;
 typedef void *js_typed_callback_info_t;
 
 typedef void *js_string_view_t;
-typedef void *js_typedarray_view_t;
-typedef void *js_dataview_view_t;
 
 typedef struct js_type_tag_s js_type_tag_t;
 typedef struct js_property_descriptor_s js_property_descriptor_t;
@@ -1559,26 +1557,6 @@ static inline int
 js_release_string_view(js_env_t *env, js_string_view_t *view) {
   free(view);
 
-  return 0;
-}
-
-static inline int
-js_get_typedarray_view(js_env_t *env, js_value_t *typedarray, js_typedarray_type_t *type, void **data, size_t *len, js_typedarray_view_t **result) {
-  return js_get_typedarray_info(env, typedarray, type, data, len, NULL, NULL);
-}
-
-static inline int
-js_release_typedarray_view(js_env_t *env, js_typedarray_view_t *view) {
-  return 0;
-}
-
-static inline int
-js_get_dataview_view(js_env_t *env, js_value_t *dataview, void **data, size_t *len, js_dataview_view_t **result) {
-  return js_get_dataview_info(env, dataview, data, len, NULL, NULL);
-}
-
-static inline int
-js_release_dataview_view(js_env_t *env, js_dataview_view_t *view) {
   return 0;
 }
 
