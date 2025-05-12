@@ -577,7 +577,7 @@ js_create_bigint_uint64(js_env_t *env, uint64_t value, js_value_t **result) {
 
 static inline int
 js_create_string_utf8(js_env_t *env, const utf8_t *str, size_t len, js_value_t **result) {
-  napi_status status = napi_create_string_utf8(env, str, len, result);
+  napi_status status = napi_create_string_utf8(env, (const char *) str, len, result);
   return js_convert_from_status(status);
 }
 
@@ -589,7 +589,7 @@ js_create_string_utf16le(js_env_t *env, const utf16_t *str, size_t len, js_value
 
 static inline int
 js_create_string_latin1(js_env_t *env, const latin1_t *str, size_t len, js_value_t **result) {
-  napi_status status = napi_create_string_latin1(env, str, len, result);
+  napi_status status = napi_create_string_latin1(env, (const char *) str, len, result);
   return js_convert_from_status(status);
 }
 
@@ -597,7 +597,7 @@ static inline int
 js_create_external_string_utf8(js_env_t *env, utf8_t *str, size_t len, js_finalize_cb finalize_cb, void *finalize_hint, js_value_t **result, bool *copied) {
   if (copied) *copied = true;
 
-  napi_status status = napi_create_string_utf8(env, str, len, result);
+  napi_status status = napi_create_string_utf8(env, (const char *) str, len, result);
 
   if (status == napi_ok && finalize_cb) finalize_cb(env, str, finalize_hint);
 
@@ -621,7 +621,7 @@ js_create_external_string_utf16le(js_env_t *env, utf16_t *str, size_t len, js_fi
 static inline int
 js_create_external_string_latin1(js_env_t *env, latin1_t *str, size_t len, js_finalize_cb finalize_cb, void *finalize_hint, js_value_t **result, bool *copied) {
 #if NAPI_VERSION >= 10
-  napi_status status = node_api_create_external_string_latin1(env, str, len, finalize_cb, finalize_hint, result, copied);
+  napi_status status = node_api_create_external_string_latin1(env, (char *) str, len, finalize_cb, finalize_hint, result, copied);
 #else
   if (copied) *copied = true;
 
@@ -635,7 +635,7 @@ js_create_external_string_latin1(js_env_t *env, latin1_t *str, size_t len, js_fi
 static inline int
 js_create_property_key_utf8(js_env_t *env, const utf8_t *str, size_t len, js_value_t **result) {
 #if NAPI_VERSION >= 10
-  napi_status status = node_api_create_property_key_utf8(env, str, len, result);
+  napi_status status = node_api_create_property_key_utf8(env, (const char *) str, len, result);
 #else
   napi_status status = napi_create_string_utf8(env, str, len, result);
 #endif
@@ -655,7 +655,7 @@ js_create_property_key_utf16le(js_env_t *env, const utf16_t *str, size_t len, js
 static inline int
 js_create_property_key_latin1(js_env_t *env, const latin1_t *str, size_t len, js_value_t **result) {
 #if NAPI_VERSION >= 10
-  napi_status status = node_api_create_property_key_latin1(env, str, len, result);
+  napi_status status = node_api_create_property_key_latin1(env, (const char *) str, len, result);
 #else
   napi_status status = napi_create_string_latin1(env, str, len, result);
 #endif
@@ -1332,13 +1332,19 @@ js_get_value_bigint_uint64(js_env_t *env, js_value_t *value, uint64_t *result, b
 
 static inline int
 js_get_value_string_utf8(js_env_t *env, js_value_t *value, utf8_t *str, size_t len, size_t *result) {
-  napi_status status = napi_get_value_string_utf8(env, value, str, len, result);
+  napi_status status = napi_get_value_string_utf8(env, value, (char *) str, len, result);
   return js_convert_from_status(status);
 }
 
 static inline int
 js_get_value_string_utf16le(js_env_t *env, js_value_t *value, utf16_t *str, size_t len, size_t *result) {
   napi_status status = napi_get_value_string_utf16(env, value, str, len, result);
+  return js_convert_from_status(status);
+}
+
+static inline int
+js_get_value_string_latin1(js_env_t *env, js_value_t *value, latin1_t *str, size_t len, size_t *result) {
+  napi_status status = napi_get_value_string_latin1(env, value, (char *) str, len, result);
   return js_convert_from_status(status);
 }
 
