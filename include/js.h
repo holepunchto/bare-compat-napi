@@ -625,7 +625,7 @@ js_create_external_string_latin1(js_env_t *env, latin1_t *str, size_t len, js_fi
 #else
   if (copied) *copied = true;
 
-  napi_status status = napi_create_string_latin1(env, str, len, result);
+  napi_status status = napi_create_string_latin1(env, (char *) str, len, result);
 
   if (status == napi_ok && finalize_cb) finalize_cb(env, str, finalize_hint);
 #endif
@@ -637,7 +637,7 @@ js_create_property_key_utf8(js_env_t *env, const utf8_t *str, size_t len, js_val
 #if NAPI_VERSION >= 10
   napi_status status = node_api_create_property_key_utf8(env, (const char *) str, len, result);
 #else
-  napi_status status = napi_create_string_utf8(env, str, len, result);
+  napi_status status = napi_create_string_utf8(env, (const char *) str, len, result);
 #endif
   return js_convert_from_status(status);
 }
@@ -657,7 +657,7 @@ js_create_property_key_latin1(js_env_t *env, const latin1_t *str, size_t len, js
 #if NAPI_VERSION >= 10
   napi_status status = node_api_create_property_key_latin1(env, (const char *) str, len, result);
 #else
-  napi_status status = napi_create_string_latin1(env, str, len, result);
+  napi_status status = napi_create_string_latin1(env, (const char *) str, len, result);
 #endif
   return js_convert_from_status(status);
 }
