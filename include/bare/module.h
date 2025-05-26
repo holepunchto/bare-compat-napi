@@ -17,6 +17,9 @@
 
 #define BARE_MODULE(id, fn) \
   BARE_EXTERN_C_START \
+  int32_t node_api_module_get_api_version_v1(void) { \
+    return NAPI_VERSION; \
+  } \
   napi_value napi_register_module_v1(napi_env env, napi_value exports) { \
     return fn(env, exports); \
   } \
