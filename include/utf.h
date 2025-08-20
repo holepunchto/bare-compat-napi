@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
 #ifndef __cplusplus
 typedef uint16_t char16_t;
 #endif
