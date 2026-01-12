@@ -573,6 +573,12 @@ js_create_bigint_uint64(js_env_t *env, uint64_t value, js_value_t **result) {
   return js_convert_from_status(status);
 }
 
+static inline int
+js_create_bigint_words(js_env_t *env, int sign, const uint64_t *words, size_t len, js_value_t **result) {
+  napi_status status = napi_create_bigint_words(env, sign, len, words, result);
+  return js_convert_from_status(status);
+}
+
 #endif
 
 static inline int
@@ -1325,6 +1331,17 @@ js_get_value_bigint_int64(js_env_t *env, js_value_t *value, int64_t *result, boo
 static inline int
 js_get_value_bigint_uint64(js_env_t *env, js_value_t *value, uint64_t *result, bool *lossless) {
   napi_status status = napi_get_value_bigint_uint64(env, value, result, lossless);
+  return js_convert_from_status(status);
+}
+
+static inline int
+js_get_value_bigint_words(js_env_t *env, js_value_t *value, int *sign, uint64_t *words, size_t len, size_t *result) {
+  size_t count = len;
+
+  napi_status status = napi_get_value_bigint_words(env, value, sign, &count, words);
+
+  if (result) *result = count;
+
   return js_convert_from_status(status);
 }
 
