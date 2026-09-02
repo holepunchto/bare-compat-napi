@@ -21,6 +21,14 @@ extern "C" {
 #define NAPI_VERSION NODE_API_SUPPORTED_VERSION_MAX
 #endif
 
+#ifndef NODE_API_EXPERIMENTAL_NOGC_ENV_OPT_OUT
+#define NODE_API_EXPERIMENTAL_NOGC_ENV_OPT_OUT
+#endif
+
+#ifndef NODE_API_EXPERIMENTAL_BASIC_ENV_OPT_OUT
+#define NODE_API_EXPERIMENTAL_BASIC_ENV_OPT_OUT
+#endif
+
 #include <node_api.h>
 
 typedef struct napi_env__ js_env_t;
@@ -797,6 +805,22 @@ js_detach_arraybuffer(js_env_t *env, js_value_t *arraybuffer) {
 
 #endif
 
+#ifdef NODE_API_EXPERIMENTAL_HAS_SHAREDARRAYBUFFER
+
+static inline int
+js_create_sharedarraybuffer(js_env_t *env, size_t len, void **data, js_value_t **result) {
+  napi_status status = node_api_create_sharedarraybuffer(env, len, data, result);
+  return js_convert_from_status(status);
+}
+
+static inline int
+js_create_unsafe_sharedarraybuffer(js_env_t *env, size_t len, void **data, js_value_t **result) {
+  napi_status status = node_api_create_sharedarraybuffer(env, len, data, result);
+  return js_convert_from_status(status);
+}
+
+#endif
+
 static inline int
 js_create_typedarray(js_env_t *env, js_typedarray_type_t type, size_t len, js_value_t *arraybuffer, size_t offset, js_value_t **result) {
   napi_status status = napi_create_typedarray(env, js_convert_to_typedarray_type(type), len, arraybuffer, offset, result);
@@ -1045,6 +1069,16 @@ js_is_arraybuffer(js_env_t *env, js_value_t *value, bool *result) {
 static inline int
 js_is_detached_arraybuffer(js_env_t *env, js_value_t *value, bool *result) {
   napi_status status = napi_is_detached_arraybuffer(env, value, result);
+  return js_convert_from_status(status);
+}
+
+#endif
+
+#ifdef NODE_API_EXPERIMENTAL_HAS_SHAREDARRAYBUFFER
+
+static inline int
+js_is_sharedarraybuffer(js_env_t *env, js_value_t *value, bool *result) {
+  napi_status status = node_api_is_sharedarraybuffer(env, value, result);
   return js_convert_from_status(status);
 }
 
@@ -1535,6 +1569,16 @@ js_get_arraybuffer_info(js_env_t *env, js_value_t *arraybuffer, void **data, siz
   napi_status status = napi_get_arraybuffer_info(env, arraybuffer, data, len);
   return js_convert_from_status(status);
 }
+
+#ifdef NODE_API_EXPERIMENTAL_HAS_SHAREDARRAYBUFFER
+
+static inline int
+js_get_sharedarraybuffer_info(js_env_t *env, js_value_t *sharedarraybuffer, void **data, size_t *len) {
+  napi_status status = napi_get_arraybuffer_info(env, sharedarraybuffer, data, len);
+  return js_convert_from_status(status);
+}
+
+#endif
 
 static inline int
 js_get_typedarray_info(js_env_t *env, js_value_t *typedarray, js_typedarray_type_t *type, void **data, size_t *len, js_value_t **arraybuffer, size_t *offset) {
