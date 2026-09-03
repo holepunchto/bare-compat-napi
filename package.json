@@ -5,9 +5,22 @@
   "exports": {
     "./package": "./package.json"
   },
+  "imports": {
+    "path": {
+      "bare": "bare-path",
+      "default": "path"
+    }
+  },
   "files": [
     "include"
   ],
+  "scripts": {
+    "format": "prettier --write . && lunte --fix",
+    "lint": "prettier --check . && lunte",
+    "test": "npm run test:bare && npm run test:node",
+    "test:bare": "brittle-bare --coverage test.js",
+    "test:node": "brittle-node --coverage test.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/holepunchto/bare-compat-napi.git"
@@ -19,7 +32,13 @@
   },
   "homepage": "https://github.com/holepunchto/bare-compat-napi#readme",
   "devDependencies": {
-    "cmake-fetch": "^1.4.1",
-    "cmake-napi": "^1.1.3"
+    "bare-make": "^1.8.0",
+    "bare-path": "^3.0.0",
+    "brittle": "^4.1.1",
+    "cmake-napi": "^1.3.0",
+    "lunte": "^1.8.4",
+    "prettier": "^3.9.6",
+    "prettier-config-holepunch": "^2.0.0",
+    "which-runtime": "^1.4.0"
   }
 }

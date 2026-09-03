@@ -2,16 +2,22 @@ cmake_minimum_required(VERSION 3.31)
 
 find_package(cmake-napi REQUIRED PATHS node_modules/cmake-napi)
 
-project(bare_addon C CXX)
+project(bare_addon C)
 
 add_subdirectory(../../.. bare-compat-napi)
 
 add_napi_module(addon)
 
+target_compile_definitions(
+  ${addon}
+  PRIVATE
+    NAPI_EXPERIMENTAL
+)
+
 target_sources(
   ${addon}
   PRIVATE
-    binding.cc
+    binding.c
 )
 
 target_link_libraries(

@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.31)
 
-find_package(cmake-fetch REQUIRED PATHS node_modules/cmake-fetch)
-find_package(cmake-napi REQUIRED PATHS node_modules/cmake-napi)
-
 project(bare_compat_napi C CXX)
 
 add_library(bare_compat_napi INTERFACE)
@@ -29,9 +26,3 @@ target_include_directories(
   INTERFACE
     include
 )
-
-if(PROJECT_IS_TOP_LEVEL)
-  enable_testing()
-
-  add_subdirectory(test)
-endif()

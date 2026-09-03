@@ -4,6 +4,8 @@ find_package(cmake-napi REQUIRED PATHS node_modules/cmake-napi)
 
 project(bare_addon C)
 
+add_subdirectory(../../.. bare-compat-napi)
+
 add_napi_module(addon)
 
 target_sources(
