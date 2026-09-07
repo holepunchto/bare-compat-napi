@@ -1445,7 +1445,7 @@ js_get_array_elements(js_env_t *env, js_value_t *array, js_value_t **elements, s
 }
 
 static inline int
-js_set_array_elements(js_env_t *env, js_value_t *array, const js_value_t *elements[], size_t len, size_t offset) {
+js_set_array_elements(js_env_t *env, js_value_t *array, js_value_t *const elements[], size_t len, size_t offset) {
   napi_status status = napi_ok;
 
   for (size_t i = 0; i < len; i++) {
