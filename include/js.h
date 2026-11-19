@@ -67,6 +67,33 @@ enum {
    * execution stack is empty.
    */
   js_uncaught_exception = -2,
+
+  /**
+   * The threadsafe function has been released, whether by every thread holding
+   * it, in abort mode, or along with its environment.
+   */
+  js_closing = -3,
+
+  /**
+   * The queue of the threadsafe function is full.
+   */
+  js_queue_full = -4,
+
+  /**
+   * The engine does not support the operation.
+   */
+  js_unsupported = -5,
+
+  /**
+   * The operation is not valid in the current state, such as releasing a
+   * threadsafe function that no thread holds.
+   */
+  js_invalid_state = -6,
+
+  /**
+   * The memory needed for the operation could not be allocated.
+   */
+  js_out_of_memory = -7,
 };
 
 typedef enum {
@@ -1668,6 +1695,43 @@ js_new_instance(js_env_t *env, js_value_t *constructor, size_t argc, js_value_t 
 #if NAPI_VERSION >= 7
 
 static inline int
+js_convert_from_threadsafe_function_status(napi_status status) {
+  switch (status) {
+  case napi_ok:
+    return 0;
+  case napi_closing:
+    return js_closing;
+  case napi_queue_full:
+    return js_queue_full;
+  default:
+    return js_invalid_state;
+  }
+}
+
+typedef struct {
+  js_threadsafe_function_cb cb;
+  void *context;
+  js_finalize_cb finalize_cb;
+  void *finalize_hint;
+} js_threadsafe_function_info_t;
+
+static inline void
+js__threadsafe_function_call(napi_env env, napi_value function, void *context, void *data) {
+  js_threadsafe_function_info_t *info = (js_threadsafe_function_info_t *) context;
+
+  info->cb(env, function, info->context, data);
+}
+
+static inline void
+js__threadsafe_function_finalize(napi_env env, void *data, void *hint) {
+  js_threadsafe_function_info_t *info = (js_threadsafe_function_info_t *) data;
+
+  if (info->finalize_cb) info->finalize_cb(env, info->context, info->finalize_hint);
+
+  free(info);
+}
+
+static inline int
 js_create_threadsafe_function(js_env_t *env, js_value_t *function, size_t queue_limit, size_t initial_thread_count, js_finalize_cb finalize_cb, void *finalize_hint, void *context, js_threadsafe_function_cb cb, js_threadsafe_function_t **result) {
   napi_status status;
 
@@ -1675,33 +1739,44 @@ js_create_threadsafe_function(js_env_t *env, js_value_t *function, size_t queue_
   status = napi_create_string_utf8(env, "js_threadsafe_function_t", NAPI_AUTO_LENGTH, &resource_name);
   assert(status == napi_ok);
 
-  status = napi_create_threadsafe_function(env, function, NULL, resource_name, queue_limit, initial_thread_count, finalize_hint, finalize_cb, context, cb, result);
+  js_threadsafe_function_info_t *info = (js_threadsafe_function_info_t *) malloc(sizeof(js_threadsafe_function_info_t));
+
+  info->cb = cb;
+  info->context = context;
+  info->finalize_cb = finalize_cb;
+  info->finalize_hint = finalize_hint;
+
+  status = napi_create_threadsafe_function(env, function, NULL, resource_name, queue_limit, initial_thread_count, info, js__threadsafe_function_finalize, info, cb ? js__threadsafe_function_call : NULL, result);
+
+  if (status != napi_ok) free(info);
 
   return js_convert_from_status(status);
 }
 
 static inline int
 js_get_threadsafe_function_context(js_threadsafe_function_t *function, void **result) {
-  napi_status status = napi_get_threadsafe_function_context(function, result);
+  js_threadsafe_function_info_t *info;
+  napi_status status = napi_get_threadsafe_function_context(function, (void **) &info);
+  if (status == napi_ok) *result = info->context;
   return js_convert_from_status(status);
 }
 
 static inline int
 js_call_threadsafe_function(js_threadsafe_function_t *function, void *data, js_threadsafe_function_call_mode_t mode) {
   napi_status status = napi_call_threadsafe_function(function, data, js_convert_to_threadsafe_function_call_mode(mode));
-  return js_convert_from_status(status);
+  return js_convert_from_threadsafe_function_status(status);
 }
 
 static inline int
 js_acquire_threadsafe_function(js_threadsafe_function_t *function) {
   napi_status status = napi_acquire_threadsafe_function(function);
-  return js_convert_from_status(status);
+  return js_convert_from_threadsafe_function_status(status);
 }
 
 static inline int
 js_release_threadsafe_function(js_threadsafe_function_t *function, js_threadsafe_function_release_mode_t mode) {
   napi_status status = napi_release_threadsafe_function(function, js_convert_to_threadsafe_function_release_mode(mode));
-  return js_convert_from_status(status);
+  return js_convert_from_threadsafe_function_status(status);
 }
 
 static inline int
